@@ -1,10 +1,24 @@
+import 'package:bet_blocker/components/buttons/default_button.dart';
+import 'package:bet_blocker/components/inputs/default_input.dart';
 import 'package:bet_blocker/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+  LoginScreen({super.key});
 
   static String path = '/login';
+
+  final controller = PageController();
+
+  void _goto(int index) {
+    if (index >= 0 && index <= 1) {
+      controller.animateToPage(
+        index,
+        duration: Duration(milliseconds: 250),
+        curve: Curves.easeInOutCubic,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +31,17 @@ class LoginScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(child: PageView(children: [_Login()])),
-              _PageButtonsWrapper(),
+              Expanded(
+                child: PageView(
+                  controller: controller,
+                  physics: NeverScrollableScrollPhysics(),
+                  children: [
+                    _Login(),
+                    _Register(),
+                  ],
+                ),
+              ),
+              _PageButtonsWrapper(changePage: _goto),
             ],
           ),
         ),
@@ -28,7 +51,9 @@ class LoginScreen extends StatelessWidget {
 }
 
 class _PageButtonsWrapper extends StatefulWidget {
-  const _PageButtonsWrapper();
+  const _PageButtonsWrapper({required this.changePage});
+
+  final void Function(int) changePage;
 
   @override
   State<_PageButtonsWrapper> createState() => _PageButtonsWrapperState();
@@ -54,10 +79,10 @@ class _PageButtonsWrapperState extends State<_PageButtonsWrapper> {
             child: _PageButton(
               icon: 'assets/images/next.png',
               title: 'LOGIN',
-              onClick:
-                  () => setState(() {
-                    isLogin = true;
-                  }),
+              onClick: () => setState(() {
+                isLogin = true;
+                widget.changePage(0);
+              }),
               selected: isLogin,
             ),
           ),
@@ -65,10 +90,10 @@ class _PageButtonsWrapperState extends State<_PageButtonsWrapper> {
             child: _PageButton(
               icon: 'assets/images/next.png',
               title: 'CADASTRO',
-              onClick:
-                  () => setState(() {
-                    isLogin = false;
-                  }),
+              onClick: () => setState(() {
+                isLogin = false;
+                widget.changePage(1);
+              }),
               selected: !isLogin,
             ),
           ),
@@ -101,7 +126,7 @@ class _PageButtonState extends State<_PageButton>
   late Animation<Color?> _textColorAnim;
   late Animation<Color?> _btnBgColorAnim;
   late Animation<Color?> _btnForeColorAnim;
-  final duration = Duration(milliseconds: 350);
+  final duration = Duration(milliseconds: 200);
   Color? color;
 
   @override
@@ -112,23 +137,26 @@ class _PageButtonState extends State<_PageButton>
     _textColorAnim = ColorTween(
       begin: AppColors.cSecond,
       end: AppColors.cMain,
-    ).animate(_controller)..addListener(() {
-      setState(() {});
-    });
+    ).animate(_controller)
+      ..addListener(() {
+        setState(() {});
+      });
 
     _btnBgColorAnim = ColorTween(
       begin: AppColors.cMain,
       end: AppColors.cSecond,
-    ).animate(_controller)..addListener(() {
-      setState(() {});
-    });
+    ).animate(_controller)
+      ..addListener(() {
+        setState(() {});
+      });
 
     _btnForeColorAnim = ColorTween(
       begin: AppColors.cSecond,
       end: AppColors.cMain,
-    ).animate(_controller)..addListener(() {
-      setState(() {});
-    });
+    ).animate(_controller)
+      ..addListener(() {
+        setState(() {});
+      });
   }
 
   @override
@@ -178,8 +206,11 @@ class _PageButtonState extends State<_PageButton>
   }
 }
 
-class _Login extends StatelessWidget {
-  const _Login();
+class _ContentWithLogo extends StatelessWidget {
+  const _ContentWithLogo({this.children = const [], this.spacing = 48});
+
+  final List<Widget> children;
+  final double spacing;
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +224,20 @@ class _Login extends StatelessWidget {
           height: 105,
           fit: BoxFit.contain,
         ),
-        SizedBox(height: 48),
+        SizedBox(height: spacing),
+        for (final child in children) child,
+      ],
+    );
+  }
+}
+
+class _Login extends StatelessWidget {
+  const _Login();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ContentWithLogo(
+      children: [
         Text(
           'JÁ TENHO LOGIN',
           style: TextStyle(
@@ -204,45 +248,14 @@ class _Login extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 26),
-        TextFormField(
+        DefaultInput(
           decoration: InputDecoration(
-            fillColor: AppColors.cSecond100,
-            filled: true,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(3)),
-              borderSide: BorderSide(color: AppColors.cMain, width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(3)),
-              borderSide: BorderSide(color: AppColors.cMain, width: 1),
-            ),
-            hintStyle: TextStyle(
-              color: AppColors.cFourth,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
             hintText: 'E-mail',
           ),
-          style: TextStyle(
-            color: AppColors.cThird,
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
-          cursorColor: AppColors.cMain,
         ),
         SizedBox(height: 24),
-        TextButton(
+        DefaultButton(
           onPressed: () => {},
-          style: TextButton.styleFrom(
-            backgroundColor: AppColors.cMain,
-            foregroundColor: AppColors.cSecond,
-            minimumSize: Size(0, 0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(100)),
-              side: BorderSide.none,
-            ),
-            padding: EdgeInsets.symmetric(vertical: 14.5, horizontal: 20),
-          ),
           child: Text(
             'CONTINUAR',
             style: TextStyle(
@@ -255,17 +268,15 @@ class _Login extends StatelessWidget {
         SizedBox(height: 38),
         Container(height: 1, decoration: BoxDecoration(color: AppColors.cMain)),
         SizedBox(height: 32),
-        TextButton(
+        DefaultButton(
           onPressed: () => {},
           style: TextButton.styleFrom(
             backgroundColor: AppColors.cThird,
             foregroundColor: AppColors.cSecond,
-            minimumSize: Size(0, 0),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(14)),
               side: BorderSide.none,
             ),
-            padding: EdgeInsets.symmetric(vertical: 14.5, horizontal: 20),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -287,6 +298,57 @@ class _Login extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Register extends StatelessWidget {
+  const _Register();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ContentWithLogo(
+      spacing: 55,
+      children: [
+        Text(
+          'COMO TE CHAMAREMOS?',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: AppColors.cThird,
+            fontWeight: FontWeight.bold,
+            fontSize: 23,
+          ),
+        ),
+        SizedBox(height: 20),
+        DefaultInput(
+          decoration: InputDecoration(
+            hintText: 'Nome completo',
+          ),
+        ),
+        SizedBox(height: 23),
+        DefaultInput(
+          decoration: InputDecoration(
+            hintText: 'Ele/dele',
+          ),
+        ),
+        SizedBox(height: 37),
+        DefaultButton(
+          onPressed: () => {},
+          style: TextButton.styleFrom(
+            backgroundColor: AppColors.cMain,
+            foregroundColor: AppColors.cSecond,
+          ),
+          child: Text(
+            'ME CHAME ASSIM',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.cSecond,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
       ],
